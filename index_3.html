@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curiosidades Caninas e Animalescas</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    header {
+      background-color: #ffcc00;
+      padding: 30px 20px;
+      text-align: center;
+      font-size: 2.5em;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    nav {
+      background-color: #333;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1em;
+      margin: 0 15px;
+      cursor: pointer;
+    }
+
+    nav button:hover {
+      text-decoration: underline;
+    }
+
+    .animal-section {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      margin: 40px auto;
+      max-width: 900px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .animal-image {
+      flex: 1;
+      max-width: 300px;
+      margin-right: 20px;
+    }
+
+    .animal-image img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .animal-description {
+      flex: 2;
+    }
+
+    .pagination {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .pagination button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    @media screen and (max-width: 768px) {
+      .animal-section {
+        flex-direction: column;
+        text-align: center;
+      }
+      .animal-image {
+        margin-right: 0;
+        margin-bottom: 20px;
+      }
+      nav {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    Curiosidades Caninas e Animalescas
+  </header>
+
+  <nav>
+    <button onclick="filtrarCategoria('top_animais')">Top Animais</button>
+    <button onclick="filtrarCategoria('caes')">Cães</button>
+    <button onclick="filtrarCategoria('gatos')">Gatos</button>
+    <button onclick="filtrarCategoria('aves')">Aves</button>
+    <button onclick="filtrarCategoria('predadores')">Predadores</button>
+  </nav>
+
+  <div id="animal-container"></div>
+  <div class="pagination">
+    <button id="prev-page">Anterior</button>
+    <span id="page-indicator"></span>
+    <button id="next-page">Próximo</button>
+  </div>
+
+  <script>
+    const container = document.getElementById('animal-container');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+
+    let animals = [];
+    let currentPage = 1;
+    const itemsPerPage = 5;
+    let categoriaAtual = 'top_animais';
+
+    async function loadCSV() {
+      const response = await fetch('dados.csv');
+      const text = await response.text();
+      const lines = text.trim().split('\n');
+      const headers = lines[0].split(';');
+
+      animals = lines.slice(1).map(line => {
+        const parts = line.split(';');
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h.trim()] = parts[i] ? parts[i].trim() : '';
+        });
+        return obj;
+      });
+      renderPage();
+    }
+
+    function filtrarCategoria(cat) {
+      categoriaAtual = cat;
+      currentPage = 1;
+      renderPage();
+    }
+
+    function renderPage() {
+      container.innerHTML = '';
+      const filtrados = animals.filter(a => a.categoria === categoriaAtual);
+      const start = (currentPage - 1) * itemsPerPage;
+      const pageItems = filtrados.slice(start, start + itemsPerPage);
+
+      pageItems.forEach(animal => {
+        const section = document.createElement('section');
+        section.className = 'animal-section';
+
+        section.innerHTML = `
+          <div class="animal-image">
+            <img src="imagens/${animal.id}_1.jpeg" alt="${animal.nome}">
+          </div>
+          <div class="animal-description">
+            <h2>${animal.nome}</h2>
+            <h4><i>${animal.especie}</i></h4>
+            <p>${animal.desc1}</p>
+          </div>
+        `;
+
+        container.appendChild(section);
+      });
+
+      const totalPages = Math.ceil(filtrados.length / itemsPerPage);
+      pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+    }
+
+    prevBtn.onclick = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPage();
+      }
+    }
+
+    nextBtn.onclick = () => {
+      const filtrados = animals.filter(a => a.categoria === categoriaAtual);
+      if (currentPage < Math.ceil(filtrados.length / itemsPerPage)) {
+        currentPage++;
+        renderPage();
+      }
+    }
+
+    loadCSV();
+  </script>
+</body>
+</html>
