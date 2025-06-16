@@ -202,9 +202,15 @@
     <button onclick="filtrarCategoria('caes')">Cães</button>
 	<button onclick="filtrarCategoria('gatos')">Gatos</button>
     <button onclick="filtrarCategoria('lendarios')">Lendários</button>
+	<button onclick="filtrarCategoria('x1')">x1</button>
   </nav>
 
+  <div id="x1-disclaimer" style="display:none; text-align:center; margin:20px auto; max-width:800px; background-color:#ffe0e0; padding:15px; border-radius:10px; font-weight:bold; border: 2px solid red;">
+    ⚠️ Este site não incentiva qualquer tipo de rinha, briga ou violência com animais reais. Todo conteúdo apresentado na categoria <i>x1</i> é puramente teórico, fictício e de cunho humorístico.
+  </div>
+
   <div id="animal-container"></div>
+
   <div class="pagination">
     <button id="prev-page">Anterior</button>
     <span id="page-indicator"></span>
@@ -300,47 +306,67 @@
     function filtrarCategoria(cat) {
       categoriaAtual = cat;
       currentPage = 1;
+	  // Remover classe ativa de todos os botões
+	  document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+	  // Adicionar classe ativa ao botão correspondente
+	  const botaoAtivo = document.querySelector(`nav button[onclick*="${cat}"]`);
+	  if (botaoAtivo) botaoAtivo.classList.add('active');
+	  // Mostrar ou esconder o disclaimer da categoria x1
+	  const disclaimer = document.getElementById('x1-disclaimer');
+	  if (cat === 'x1') {
+		disclaimer.style.display = 'block';
+	  } else {
+		disclaimer.style.display = 'none';
+	  }
       renderPage();
     }
 
-	function renderPage() {
-	  container.innerHTML = '';
-	  const filtrados = animals.filter(a => a.categoria === categoriaAtual);
-	  const start = (currentPage - 1) * itemsPerPage;
-	  const pageItems = filtrados.slice(start, start + itemsPerPage);
-
-	  pageItems.forEach(animal => {
-		const section = document.createElement('section');
-		section.className = 'animal-section';
-
-		section.innerHTML = `
-		  <div class="animal-image" id="img-${animal.id}">
-			<img src="imagens/${animal.id}_1.jpeg" alt="${animal.nome}" id="img-animal-${animal.id}">
-			<video id="video-${animal.id}" width="100%" style="display:none; border-radius:10px;" playsinline></video>
-			<div style="text-align:center; margin-top:10px;">
-			  <button onclick="voltarEtapa('${animal.id}')">⬅️</button>
-			  <button onclick="avancarEtapa('${animal.id}')">➡️</button>
-			</div>
-		  </div>
-		  <div class="animal-description" id="desc-${animal.id}">
-			<h2>${animal.nome}</h2>
-			<h4><i>${animal.especie}</i></h4>
-			<p>${animal.desc1.replaceAll('<br>', '<br>')}</p>
-		  </div>
-		`;
-
-		// Força interpretação de <br> como quebra de linha
-		const descP = section.querySelector(`#desc-${animal.id} p`);
-		descP.innerHTML = animal.desc1;
-
-		container.appendChild(section);
-	  });
-
-	  const totalPages = Math.ceil(filtrados.length / itemsPerPage);
-	  pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
-	  prevBtn.disabled = currentPage === 1;
-	  nextBtn.disabled = currentPage === totalPages;
-	}
+    function renderPage() {
+      container.innerHTML = '';
+    
+      const disclaimer = document.getElementById('x1-disclaimer');
+      if (categoriaAtual === 'x1') {
+        disclaimer.style.display = 'block';
+      } else {
+        disclaimer.style.display = 'none';
+      }
+    
+      const filtrados = animals.filter(a => a.categoria === categoriaAtual);
+      const start = (currentPage - 1) * itemsPerPage;
+      const pageItems = filtrados.slice(start, start + itemsPerPage);
+    
+      pageItems.forEach(animal => {
+        const section = document.createElement('section');
+        section.className = 'animal-section';
+    
+        section.innerHTML = `
+          <div class="animal-image" id="img-${animal.id}">
+            <img src="imagens/${animal.id}_1.jpeg" alt="${animal.nome}" id="img-animal-${animal.id}">
+            <video id="video-${animal.id}" width="100%" style="display:none; border-radius:10px;" playsinline></video>
+            <div style="text-align:center; margin-top:10px;">
+              <button onclick="voltarEtapa('${animal.id}')">⬅️</button>
+              <button onclick="avancarEtapa('${animal.id}')">➡️</button>
+            </div>
+          </div>
+          <div class="animal-description" id="desc-${animal.id}">
+            <h2>${animal.nome}</h2>
+            <h4><i>${animal.especie}</i></h4>
+            <p>${animal.desc1.replaceAll('<br>', '<br>')}</p>
+          </div>
+        `;
+    
+        // Força interpretação de <br> como quebra de linha
+        const descP = section.querySelector(`#desc-${animal.id} p`);
+        descP.innerHTML = animal.desc1;
+    
+        container.appendChild(section);
+      });
+    
+      const totalPages = Math.ceil(filtrados.length / itemsPerPage);
+      pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+    }
 
     prevBtn.onclick = () => {
       if (currentPage > 1) {
